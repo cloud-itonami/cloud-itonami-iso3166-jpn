@@ -1,16 +1,32 @@
 # cloud-itonami-iso3166-jpn
 
-Open ISO 3166 Blueprint for **JPN**: Japan.
+Open ISO 3166 Blueprint for **JPN**: Japan — **`:implemented`**
+(first running actor in the `cloud-itonami-iso3166-*` family).
 
-This repository designs a forkable OSS business for an independent
-public-sector market-entry consultant: an already-incorporated operator
-(e.g. a `cloud-itonami-cofog-{code}`, `cloud-itonami-isco-{code}`,
-`cloud-itonami-unspsc-{segment}` or `cloud-itonami-{ISIC}` blueprint
-fork) gets a Compliance Advisor + independent **Market-Entry Compliance
-Governor** to navigate public-procurement registration, local business/
-tax registration, and local-content rules in Japan, so the operator
-can win and service a government contract without hiring a full in-house
-compliance department.
+This repository designs **and implements** a forkable OSS business for
+an independent public-sector market-entry consultant: an already-
+incorporated operator (e.g. a `cloud-itonami-cofog-{code}`,
+`cloud-itonami-isco-{code}`, `cloud-itonami-unspsc-{segment}` or
+`cloud-itonami-{ISIC}` blueprint fork) gets a Compliance Advisor +
+independent **Market-Entry Compliance Governor** to navigate public-
+procurement registration, local business/tax registration, and local-
+content rules in Japan, so the operator can win and service a government
+contract without hiring a full in-house compliance department.
+
+## Implementation (R0)
+
+| Piece | Location |
+|---|---|
+| Actor namespaces | `src/marketentry/*` |
+| Governor | `:market-entry-compliance-governor` |
+| Ops | `:engagement/intake` · `:jurisdiction/assess` · `:filing/draft` · `:filing/submit` |
+| Flagship HARD check | `japan-resident-rep-missing` (全省庁統一資格 / 日本居住代理人) |
+| Tests | `clojure -M:dev:test` (24 tests / 79 assertions) |
+| Demo | `clojure -M:dev:run` |
+| Architecture ADR | [`docs/adr/0001-architecture.md`](docs/adr/0001-architecture.md) |
+
+`:filing/submit` is never in any phase's `:auto` set — human sign-off
+is structural, not a rollout milestone.
 
 ## No robotics premise — digital/data service exemption
 
