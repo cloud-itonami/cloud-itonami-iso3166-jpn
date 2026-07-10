@@ -19,7 +19,7 @@
   human sign-off'; 'a false or fabricated regulatory-requirement claim
   is a HARD hold') names exactly the checks below.
 
-  Seven checks, in priority order, ALL HARD violations: a human
+  Eight checks, in priority order, ALL HARD violations: a human
   approver CANNOT override them. The confidence/actuation gate is
   SOFT: it asks a human to look (low confidence / actuation), and the
   human may approve -- but see `marketentry.phase`: for `:stake
@@ -31,12 +31,20 @@
                                        an OFFICIAL source
                                        (`marketentry.facts`), or invent
                                        one?
-    2. Evidence incomplete         -- for `:filing/draft`/
+    2. Motivating-opportunity      -- when the proposal cites a real
+       unverified                    goyoukiki-ingested tender fact as
+                                       the motivating case
+                                       (`marketentry.goyoukiki`), was it
+                                       actually verified via
+                                       `kotoba.ontology.connector/
+                                       tagged-conforms?`, or claimed
+                                       without proof?
+    3. Evidence incomplete         -- for `:filing/draft`/
                                        `:filing/submit`, has the
                                        jurisdiction actually been
                                        assessed with a full evidence
                                        checklist on file?
-    3. Japan-resident-rep missing  -- for `:filing/submit`, when the
+    4. Japan-resident-rep missing  -- for `:filing/submit`, when the
                                        engagement declares
                                        `:requires-japan-resident-rep?
                                        true` (near-universal for JPN
@@ -52,7 +60,7 @@
                                        Grounded in Japan's 全省庁統一資格
                                        domestic office / agent
                                        requirements.
-    4. Engagement fee mismatch     -- for `:filing/submit`,
+    5. Engagement fee mismatch     -- for `:filing/submit`,
                                        INDEPENDENTLY recompute whether
                                        the engagement's own `:claimed-
                                        fee` equals `base-fee +
@@ -60,14 +68,14 @@
                                        months` -- honest reapplication
                                        of the ground-truth-recompute
                                        discipline sibling actors use.
-    5. Corporate-number unverified -- for `:filing/submit`, when the
+    6. Corporate-number unverified -- for `:filing/submit`, when the
                                        engagement declares
                                        `:requires-corporate-number?
                                        true`, INDEPENDENTLY check
                                        `:corporate-number-verified?`.
                                        CONDITIONAL on the engagement's
                                        own ground truth.
-    6. Confidence floor / actuation
+    7. Confidence floor / actuation
        gate                          -- LLM confidence below threshold,
                                        OR the op is `:filing/draft`/
                                        `:filing/submit` (REAL acts)
@@ -155,6 +163,25 @@
         [{:rule :corporate-number-unverified
           :detail (str subject " は法人番号確認を要するが未確認 -- 提出提案は進められない")}]))))
 
+(defn- motivating-opportunity-unverified-violations
+  "For `:jurisdiction/assess`, when the proposal claims a motivating
+  opportunity (marketentryllm/assess-jurisdiction sets
+  `:motivating-opportunity-claimed?` whenever the engagement declares one)
+  but `kotoba.ontology.connector/tagged-conforms?` could not verify it (an
+  untagged or mistagged fact), that is exactly the kind of fabricated
+  regulatory-requirement claim this governor's charter forbids (docs/
+  business-model.md Trust Controls: 'a false or fabricated
+  regulatory-requirement claim is a HARD hold') -- HARD, applied to the
+  opportunity-input side the same way spec-basis-violations already
+  applies it to the jurisdiction-catalog side."
+  [{:keys [op]} proposal]
+  (when (= op :jurisdiction/assess)
+    (let [value (:value proposal)]
+      (when (and (:motivating-opportunity-claimed? value)
+                 (not (:motivating-opportunity-verified? value)))
+        [{:rule :motivating-opportunity-unverified
+          :detail "引用された案件事実がontology provenanceで検証できない -- 実在案件として扱えない"}]))))
+
 (defn- already-drafted-violations
   "For `:filing/draft`, refuses to draft the SAME engagement twice."
   [{:keys [op subject]} st]
@@ -178,6 +205,7 @@
   [request _context proposal st]
   (let [hard (into []
                    (concat (spec-basis-violations request proposal)
+                           (motivating-opportunity-unverified-violations request proposal)
                            (evidence-incomplete-violations request st)
                            (japan-resident-rep-missing-violations request st)
                            (engagement-fee-mismatch-violations request st)
