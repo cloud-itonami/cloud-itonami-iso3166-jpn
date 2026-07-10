@@ -1,12 +1,3 @@
 ;; Real-world organization location / contact.
 ;; :head-role is institutional title only — no personal names.
-{:ooyake-id "gov.jpn"
-  :official-url "https://www.japan.go.jp/"
-  :name-en "Japan"
-  :name-local "日本国"
-  :wikidata "Q17"
-  :head-role-note "institutional office title only; personal names of current office-holders are intentionally NOT stored"
-  :contact-page "https://www.wikidata.org/wiki/Q262438"
-  :sourced-from "com-etzhayyim-ooyake gov-units (verbatim where present)"
-  :hq {:line-en "Shigaraki Palace" :country "jpn" :kind "capital" :provenance "https://www.wikidata.org/wiki/Q262438" :last-verified "2026-06-04" :sourcing "authoritative"}
-}
+{:contact-page "https://www.wikidata.org/wiki/Q262438", :ooyake-id "gov.jpn", :sourced-from "com-etzhayyim-ooyake gov-units (verbatim where present)", :head-role-note "institutional office title only; personal names of current office-holders are intentionally NOT stored", :official-url "https://www.japan.go.jp/", :hq {:line-en "Shigaraki Palace", :country "jpn", :kind "capital", :provenance "https://www.wikidata.org/wiki/Q262438", :last-verified "2026-06-04", :sourcing "authoritative"}, :wikidata "Q17", :name-en "Japan", :name-local "日本国"}
