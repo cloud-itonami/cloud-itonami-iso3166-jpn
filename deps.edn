@@ -6,7 +6,12 @@
  ;; inside the monorepo checkout — a standalone fork should override them
  ;; with git coordinates.
  :deps {io.github.kotoba-lang/langgraph
-        {:local/root "../../kotoba-lang/langgraph"}}
+        {:local/root "../../kotoba-lang/langgraph"}
+        ;; object-type + connector provenance tag (ADR-2607110500) -- lets
+        ;; marketentry.goyoukiki verify a real goyoukiki-ingested tender fact
+        ;; before grounding a jurisdiction assessment in it.
+        io.github.kotoba-lang/ontology
+        {:local/root "../../kotoba-lang/ontology"}}
  :aliases
  {;; offline workspace dev -- pin transitive langchain to local checkout
   :dev {:override-deps
