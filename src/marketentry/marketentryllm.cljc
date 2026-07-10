@@ -18,6 +18,7 @@
                :cljs [cljs.reader :as edn])
             [clojure.string :as str]
             [marketentry.facts :as facts]
+            [marketentry.goyoukiki :as goyoukiki]
             [marketentry.store :as store]))
 
 (defn- normalize-intake
@@ -33,28 +34,55 @@
 (defn- assess-jurisdiction
   "Per-jurisdiction market-entry evidence checklist draft. `:no-spec?`
   injects the failure mode we must defend against: proposing a
-  checklist for a jurisdiction with NO official spec-basis."
+  checklist for a jurisdiction with NO official spec-basis.
+
+  When the engagement declares a `:motivating-opportunity` (a real,
+  ontology-tagged tender fact from kotoba-lang/goyoukiki -- see
+  marketentry.goyoukiki), grounds the generic checklist in that SPECIFIC
+  opportunity's own eligibility floor. `:motivating-opportunity-claimed?`/
+  `:motivating-opportunity-verified?` are set whenever one was declared, so
+  `marketentry.governor` can HARD-hold a claim that
+  kotoba.ontology.connector/tagged-conforms? could not actually verify --
+  never silently degrade a fabricated citation into the unremarkable
+  generic case."
   [db {:keys [subject no-spec?]}]
   (let [e (store/engagement db subject)
         iso3 (if no-spec? "ATL" (:jurisdiction e))
-        sb (facts/spec-basis iso3)]
+        sb (facts/spec-basis iso3)
+        motivating-opp (:motivating-opportunity e)
+        opp-ctx (when motivating-opp
+                  (goyoukiki/opportunity-assessment-context
+                   (:motivating-connector e) motivating-opp))
+        opp-flags (when motivating-opp
+                    {:motivating-opportunity-claimed? true
+                     :motivating-opportunity-verified? (boolean opp-ctx)})]
     (if (nil? sb)
       {:summary    (str iso3 " の公式spec-basisが見つかりません")
        :rationale  "marketentry.facts に未登録の法域。要件を推測で作らない。"
        :cites      []
        :effect     :assessment/set
-       :value      {:jurisdiction iso3 :checklist [] :spec-basis nil}
+       :value      (merge {:jurisdiction iso3 :checklist [] :spec-basis nil} opp-flags)
        :stake      nil
        :confidence 0.9}
       {:summary    (str iso3 " (" (:owner-authority sb) ") 向け必要書類 "
-                        (count (:required-evidence sb)) " 件を提案")
-       :rationale  (str "公式ソース: " (:provenance sb) " / 法的根拠: " (:legal-basis sb))
-       :cites      [(:legal-basis sb) (:provenance sb)]
+                        (count (:required-evidence sb)) " 件を提案"
+                        (when opp-ctx (str " -- 案件 " (:opportunity-title opp-ctx) " に基づく")))
+       :rationale  (str "公式ソース: " (:provenance sb) " / 法的根拠: " (:legal-basis sb)
+                        (when opp-ctx
+                          (str " / 対象案件: " (:opportunity-id opp-ctx)
+                               " (出所: " (name (:opportunity-source opp-ctx)) ")")))
+       :cites      (cond-> [(:legal-basis sb) (:provenance sb)]
+                     opp-ctx (conj (:opportunity-source opp-ctx)))
        :effect     :assessment/set
-       :value      {:jurisdiction iso3
-                    :checklist (:required-evidence sb)
-                    :spec-basis (:provenance sb)
-                    :legal-basis (:legal-basis sb)}
+       :value      (merge {:jurisdiction iso3
+                           :checklist (:required-evidence sb)
+                           :spec-basis (:provenance sb)
+                           :legal-basis (:legal-basis sb)}
+                          opp-flags
+                          (when opp-ctx
+                            {:motivating-opportunity-id (:opportunity-id opp-ctx)
+                             :required-rank (:required-rank opp-ctx)
+                             :required-categories (:required-categories opp-ctx)}))
        :stake      nil
        :confidence 0.9})))
 

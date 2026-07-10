@@ -8,6 +8,7 @@
     when clean, and every decision (commit OR hold) leaves exactly one
     ledger fact."
   (:require [clojure.test :refer [deftest is testing]]
+            [kotoba.ontology.connector :as connector]
             [langgraph.graph :as g]
             [marketentry.store :as store]
             [marketentry.operation :as op]))
@@ -60,6 +61,37 @@
       (is (= :hold (get-in res [:state :disposition])))
       (is (some #{:no-spec-basis} (-> (store/ledger db) first :basis)))
       (is (nil? (store/assessment-of db "eng-1")) "no assessment written"))))
+
+(def ^:private real-tagged-tender
+  (connector/tag :jp.kkj {:id "kkj-real-1" :title "図書情報システム保守業務"
+                          :status :open :min-rank :B :required-categories #{:役務}}))
+
+(deftest motivating-opportunity-verified-grounds-the-assessment
+  (testing "a real, ontology-tagged tender fact grounds the generic JPN checklist"
+    (let [[db actor] (fresh)]
+      (exec-op actor "t3a" {:op :engagement/intake :subject "eng-1"
+                           :patch {:id "eng-1" :motivating-opportunity real-tagged-tender
+                                   :motivating-connector :jp.kkj}} operator)
+      (let [res (exec-op actor "t3b" {:op :jurisdiction/assess :subject "eng-1"} operator)]
+        (is (= :interrupted (:status res)) "assess still always needs approval")
+        (approve! actor "t3b")
+        (let [assessment (store/assessment-of db "eng-1")]
+          (is (true? (:motivating-opportunity-verified? assessment)))
+          (is (= "kkj-real-1" (:motivating-opportunity-id assessment)))
+          (is (= :B (:required-rank assessment)))
+          (is (= #{:役務} (:required-categories assessment))))))))
+
+(deftest motivating-opportunity-unverified-is-held-and-unoverridable
+  (testing "a claimed motivating opportunity that fails ontology verification -> HARD hold"
+    (let [[db actor] (fresh)]
+      (exec-op actor "t3c" {:op :engagement/intake :subject "eng-1"
+                           :patch {:id "eng-1" :motivating-opportunity {:id "fake" :status :open}
+                                   :motivating-connector :jp.kkj}} operator)
+      (let [res (exec-op actor "t3d" {:op :jurisdiction/assess :subject "eng-1"} operator)]
+        (is (= :hold (get-in res [:state :disposition])) "settles immediately, no interrupt")
+        (is (not= :interrupted (:status res)))
+        (is (some #{:motivating-opportunity-unverified} (-> (store/ledger db) last :basis)))
+        (is (nil? (store/assessment-of db "eng-1")) "no assessment written")))))
 
 (deftest draft-without-assessment-is-held
   (testing "filing/draft before any jurisdiction assessment -> HOLD (evidence incomplete)"
