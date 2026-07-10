@@ -6,5 +6,5 @@
  :itonami.blueprint/social-impact [:sme-market-access :public-spend-transparency :cross-border-friction-reduction]
  :itonami.blueprint/governor :market-entry-compliance-governor
  :itonami.blueprint/robotics false
- :itonami.blueprint/required-technologies [:identity :forms :dmn :bpmn :audit-ledger]
+ :itonami.blueprint/required-technologies [:identity :forms :dmn :bpmn :audit-ledger :ontology]
  :itonami.blueprint/status :public-oss}

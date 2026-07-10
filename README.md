@@ -21,9 +21,10 @@ contract without hiring a full in-house compliance department.
 | Governor | `:market-entry-compliance-governor` |
 | Ops | `:engagement/intake` · `:jurisdiction/assess` · `:filing/draft` · `:filing/submit` |
 | Flagship HARD check | `japan-resident-rep-missing` (全省庁統一資格 / 日本居住代理人) |
-| Tests | `clojure -M:dev:test` (24 tests / 79 assertions) |
+| Tests | `clojure -M:dev:test` (27 tests / 88 assertions) |
 | Demo | `clojure -M:dev:run` |
 | Architecture ADR | [`docs/adr/0001-architecture.md`](docs/adr/0001-architecture.md) |
+| goyoukiki bridge | `src/marketentry/goyoukiki.cljc` — grounds a jurisdiction assessment in a real, ontology-tagged tender fact from `kotoba-lang/goyoukiki`'s `jp.kkj`/`jp.geps` connectors (verified via `kotoba.ontology.connector/tagged-conforms?`, fails closed on an untagged/mistagged fact) |
 
 `:filing/submit` is never in any phase's `:auto` set — human sign-off
 is structural, not a rollout milestone.
@@ -80,6 +81,10 @@ Resolves via [`kotoba-lang/iso3166`](https://github.com/kotoba-lang/iso3166)
 - :dmn
 - :bpmn
 - :audit-ledger
+- :ontology — [`kotoba-lang/ontology`](https://github.com/kotoba-lang/ontology)'s
+  object-type + connector provenance registry, used by
+  `src/marketentry/goyoukiki.cljc` to ground a jurisdiction assessment in a
+  real, verifiably-sourced tender fact rather than an unverified one
 
 See [`docs/business-model.md`](docs/business-model.md) and
 [`docs/operator-guide.md`](docs/operator-guide.md).
