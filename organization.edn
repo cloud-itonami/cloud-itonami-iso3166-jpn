@@ -8,5 +8,13 @@
   :head-role-note "institutional office title only; personal names of current office-holders are intentionally NOT stored"
   :contact-page "https://www.wikidata.org/wiki/Q262438"
   :sourced-from "com-etzhayyim-ooyake gov-units (verbatim where present)"
-  :hq {:line-en "Shigaraki Palace" :country "jpn" :kind "capital" :provenance "https://www.wikidata.org/wiki/Q262438" :last-verified "2026-06-04" :sourcing "authoritative"}
+  ;; 2026-07-14 correction: upstream com-etzhayyim-ooyake's gov-units.capitals.edn
+  ;; carries "Shigaraki Palace" (Q262438, Japan's 8th-century capital 742-745AD)
+  ;; for gov.jpn's :capital address -- a Wikidata P36 ingestion bug (Q17/Japan has
+  ;; multiple historical P36 claims; the pull grabbed a non-current one instead of
+  ;; the present-day capital, Tokyo/Q1490). Verified directly against Wikidata
+  ;; 2026-07-14; NOT yet fixed upstream in ooyake -- flagged for that repo, not
+  ;; silently propagated further here. See scripts/compliance-fact-query.cljs
+  ;; municipality Wave 0 (ADR-2607141700 addendum 2) for the correct citation.
+  :hq {:line-en "Tokyo" :country "jpn" :kind "capital" :provenance "https://www.wikidata.org/wiki/Q1490" :last-verified "2026-07-14" :sourcing "authoritative"}
 }
