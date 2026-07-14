@@ -50,7 +50,26 @@
      :statute/url-provenance :e-gov-official
      :statute/enacted-date "1947-04-07"
      :statute/retrieved-at "2026-07-14"
-     :statute/topic #{:labor :employment}}]})
+     :statute/topic #{:labor :employment}}
+    {:statute/id "jpn.aptcp-enforcement-regulation"
+     :statute/title "犯罪による収益の移転防止に関する法律施行規則 (Ordinance for Enforcement of the Act on Prevention of Transfer of Criminal Proceeds)"
+     :statute/jurisdiction "JPN"
+     ;; Joint ministerial ordinance (共同省令, 8 ministries), not a Diet
+     ;; :law -- this repo's kind vocabulary was :law-only before this
+     ;; entry; :ministerial-ordinance is added rather than mislabeling it.
+     :statute/kind :ministerial-ordinance
+     :statute/law-number "平成二十年内閣府・総務省・法務省・財務省・厚生労働省・農林水産省・経済産業省・国土交通省令第一号"
+     :statute/url "https://laws.e-gov.go.jp/law/420M60000F5A001"
+     :statute/url-provenance :e-gov-official
+     :statute/enacted-date "2008-02-01"
+     :statute/retrieved-at "2026-07-14"
+     ;; Cross-referenced 2026-07-14 via the e-Gov law-data API
+     ;; (api/2/law_data/420M60000F5A001): most recent amendment Reiwa 8
+     ;; Ordinance No. 3, effective 2026-04-15 -- matches
+     ;; kotoba-lang/ekyc's kotoba.ekyc ADR-0001 citation of the same law
+     ;; id and the same 2026-04-15 revision date, an independent
+     ;; cross-check between the two sources.
+     :statute/topic #{:aml :identity-verification}}]})
 
 (defn spec-basis
   "The jurisdiction's statute vector, or nil -- nil means NO spec-basis

@@ -11,7 +11,15 @@
         ;; marketentry.goyoukiki verify a real goyoukiki-ingested tender fact
         ;; before grounding a jurisdiction assessment in it.
         io.github.kotoba-lang/ontology
-        {:local/root "../../kotoba-lang/ontology"}}
+        {:local/root "../../kotoba-lang/ontology"}
+        ;; real, spec-conformant 犯収法施行規則 non-face-to-face identity-
+        ;; verification method catalog -- lets marketentry.ekyc-bridge
+        ;; ground statute.facts's "jpn.aptcp-enforcement-regulation"
+        ;; citation in the real method-by-method detail behind it. A
+        ;; reference surface, not a governor HARD-check dependency (see
+        ;; marketentry.ekyc-bridge's docstring for why).
+        io.github.kotoba-lang/ekyc
+        {:local/root "../../kotoba-lang/ekyc"}}
  :aliases
  {;; offline workspace dev -- pin transitive langchain to local checkout
   :dev {:override-deps

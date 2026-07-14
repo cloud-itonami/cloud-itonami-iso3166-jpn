@@ -5,7 +5,7 @@
 
 (deftest jpn-has-spec-basis
   (let [sb (facts/spec-basis "JPN")]
-    (is (= 3 (count sb)))
+    (is (= 4 (count sb)))
     (is (every? #(str/starts-with? (:statute/url %) "https://laws.e-gov.go.jp/") sb))
     (is (every? :statute/law-number sb))))
 
@@ -22,5 +22,7 @@
 (deftest by-topic-filters
   (is (= ["jpn.labor-standards-act"]
          (mapv :statute/id (facts/by-topic "JPN" :labor))))
+  (is (= ["jpn.aptcp-enforcement-regulation"]
+         (mapv :statute/id (facts/by-topic "JPN" :identity-verification))))
   (is (empty? (facts/by-topic "JPN" :environment)))
   (is (empty? (facts/by-topic "ATL" :labor))))
