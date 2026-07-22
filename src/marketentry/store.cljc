@@ -18,10 +18,9 @@
   `:status` value).
 
   The ledger stays append-only on every backend."
-  (:require #?(:clj  [clojure.edn :as edn]
-               :cljs [cljs.reader :as edn])
-            [marketentry.registry :as registry]
-            [langchain.db :as d]))
+  (:require [marketentry.registry :as registry]
+            [langchain.db :as d]
+            [langchain-store.core :as ls]))
 
 (defprotocol Store
   (engagement [s id])
@@ -175,9 +174,6 @@
    :draft-sequence/jurisdiction     {:db/unique :db.unique/identity}
    :submit-sequence/jurisdiction    {:db/unique :db.unique/identity}})
 
-(defn- enc [v] (pr-str v))
-(defn- dec* [s] (when s (edn/read-string s)))
-
 (defn- engagement->tx [{:keys [id operator portal base-fee monthly-rate monitoring-months claimed-fee
                                requires-japan-resident-rep? has-japan-resident-rep?
                                requires-corporate-number? corporate-number-verified?
@@ -231,21 +227,12 @@
          (map #(pull->engagement (d/pull (d/db conn) engagement-pull [:engagement/id %])))
          (sort-by :id)))
   (assessment-of [_ engagement-id]
-    (dec* (d/q '[:find ?p . :in $ ?eid
-                :where [?a :assessment/engagement-id ?eid] [?a :assessment/payload ?p]]
-              (d/db conn) engagement-id)))
-  (ledger [_]
-    (->> (d/q '[:find ?s ?f :where [?e :ledger/seq ?s] [?e :ledger/fact ?f]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
-  (draft-history [_]
-    (->> (d/q '[:find ?s ?r :where [?e :draft-record/seq ?s] [?e :draft-record/record ?r]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
-  (submit-history [_]
-    (->> (d/q '[:find ?s ?r :where [?e :submit-record/seq ?s] [?e :submit-record/record ?r]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
+    (ls/dec* (d/q '[:find ?p . :in $ ?eid
+                   :where [?a :assessment/engagement-id ?eid] [?a :assessment/payload ?p]]
+                 (d/db conn) engagement-id)))
+  (ledger [_] (ls/read-stream conn :ledger/seq :ledger/fact))
+  (draft-history [_] (ls/read-stream conn :draft-record/seq :draft-record/record))
+  (submit-history [_] (ls/read-stream conn :submit-record/seq :submit-record/record))
   (next-draft-sequence [_ jurisdiction]
     (or (d/q '[:find ?n . :in $ ?j
               :where [?e :draft-sequence/jurisdiction ?j] [?e :draft-sequence/next ?n]]
@@ -266,7 +253,7 @@
       (d/transact! conn [(engagement->tx value)])
 
       :assessment/set
-      (d/transact! conn [{:assessment/engagement-id (first path) :assessment/payload (enc payload)}])
+      (d/transact! conn [{:assessment/engagement-id (first path) :assessment/payload (ls/enc payload)}])
 
       :engagement/mark-drafted
       (let [engagement-id (first path)
@@ -276,7 +263,7 @@
         (d/transact! conn
                      [(engagement->tx (assoc engagement-patch :id engagement-id))
                       {:draft-sequence/jurisdiction jurisdiction :draft-sequence/next next-n}
-                      {:draft-record/seq (count (draft-history s)) :draft-record/record (enc (get result "record"))}])
+                      {:draft-record/seq (count (draft-history s)) :draft-record/record (ls/enc (get result "record"))}])
         result)
 
       :engagement/mark-submitted
@@ -287,12 +274,12 @@
         (d/transact! conn
                      [(engagement->tx (assoc engagement-patch :id engagement-id))
                       {:submit-sequence/jurisdiction jurisdiction :submit-sequence/next next-n}
-                      {:submit-record/seq (count (submit-history s)) :submit-record/record (enc (get result "record"))}])
+                      {:submit-record/seq (count (submit-history s)) :submit-record/record (ls/enc (get result "record"))}])
         result)
       nil)
     s)
   (append-ledger! [s fact]
-    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (enc fact)}])
+    (ls/append-blob! conn :ledger/seq :ledger/fact (count (ledger s)) fact)
     fact)
   (with-engagements [s engagements]
     (when (seq engagements) (d/transact! conn (mapv engagement->tx (vals engagements)))) s))
