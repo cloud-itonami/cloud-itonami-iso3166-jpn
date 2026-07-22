@@ -1,0 +1,77 @@
+name: CI
+
+# This project's deps.edn pins langgraph, langchain-store, ontology and
+# ekyc via in-monorepo :local/root paths (../../kotoba-lang/langgraph,
+# .../langchain-store, .../ontology, .../ekyc), and the :dev alias
+# overrides langchain the same way. ekyc itself pulls kotoba-lang/identity,
+# kotoba-lang/html and kotoba-lang/css via ITS OWN :local/root paths, so
+# those need siblings too. None of this resolves on a bare single-repo
+# checkout, so the test job reconstructs the workspace layout by checking
+# out all eight siblings (all PUBLIC) into the expected relative paths --
+# no token needed. Same base pattern already used by
+# cloud-itonami-iso3166-ago / -gin / -grd / -gha / -idn; this repo is the
+# first in the family that also exercises goyoukiki (ontology) and
+# ekyc-bridge (ekyc + its own identity/html/css deps) in its test suite.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with: { cli: latest }
+      - name: clj-kondo (errors fail the build)
+        run: clojure -M:lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: orgs/cloud-itonami/cloud-itonami-iso3166-jpn }
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/langgraph
+          path: orgs/kotoba-lang/langgraph
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/langchain
+          path: orgs/kotoba-lang/langchain
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/langchain-store
+          path: orgs/kotoba-lang/langchain-store
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/ontology
+          path: orgs/kotoba-lang/ontology
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/ekyc
+          path: orgs/kotoba-lang/ekyc
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/identity
+          path: orgs/kotoba-lang/identity
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/html
+          path: orgs/kotoba-lang/html
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/css
+          path: orgs/kotoba-lang/css
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with: { cli: latest }
+      - name: test (governor contract · facts · phases · registry · store · goyoukiki · ekyc-bridge)
+        working-directory: orgs/cloud-itonami/cloud-itonami-iso3166-jpn
+        run: clojure -M:dev:test

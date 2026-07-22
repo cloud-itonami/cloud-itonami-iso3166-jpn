@@ -7,6 +7,13 @@
  ;; with git coordinates.
  :deps {io.github.kotoba-lang/langgraph
         {:local/root "../../kotoba-lang/langgraph"}
+        ;; langchain-store: the shared langchain.db store seam (EDN-blob
+        ;; codec + identity schema + event-log read/append helpers) that
+        ;; ~190 cloud-itonami actors hand-roll (ADR-2607141600);
+        ;; marketentry.store's DatomicStore uses it instead of its own
+        ;; enc/dec* two-liner.
+        io.github.kotoba-lang/langchain-store
+        {:local/root "../../kotoba-lang/langchain-store"}
         ;; object-type + connector provenance tag (ADR-2607110500) -- lets
         ;; marketentry.goyoukiki verify a real goyoukiki-ingested tender fact
         ;; before grounding a jurisdiction assessment in it.
