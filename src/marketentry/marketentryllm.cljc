@@ -16,7 +16,7 @@
   end-to-end."
   (:require #?(:clj  [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [marketentry.facts :as facts]
             [marketentry.goyoukiki :as goyoukiki]
             [marketentry.store :as store]))
