@@ -24,7 +24,7 @@ contract without hiring a full in-house compliance department.
 | Tests | `clojure -M:dev:test` (27 tests / 88 assertions) |
 | Demo | `clojure -M:dev:run` |
 | Architecture ADR | [`docs/adr/0001-architecture.md`](docs/adr/0001-architecture.md) |
-| goyoukiki bridge | `src/marketentry/goyoukiki.cljc` — grounds a jurisdiction assessment in a real, ontology-tagged tender fact from `kotoba-lang/goyoukiki`'s `jp.kkj`/`jp.geps` connectors (verified via `kotoba.ontology.connector/tagged-conforms?`, fails closed on an untagged/mistagged fact) |
+| goyoukiki bridge | `src/marketentry/goyoukiki.cljk` — grounds a jurisdiction assessment in a real, ontology-tagged tender fact from `kotoba-lang/goyoukiki`'s `jp.kkj`/`jp.geps` connectors (verified via `kotoba.ontology.connector/tagged-conforms?`, fails closed on an untagged/mistagged fact) |
 
 `:filing/submit` is never in any phase's `:auto` set — human sign-off
 is structural, not a rollout milestone.
@@ -83,7 +83,7 @@ Resolves via [`kotoba-lang/iso3166`](https://github.com/kotoba-lang/iso3166)
 - :audit-ledger
 - :ontology — [`kotoba-lang/ontology`](https://github.com/kotoba-lang/ontology)'s
   object-type + connector provenance registry, used by
-  `src/marketentry/goyoukiki.cljc` to ground a jurisdiction assessment in a
+  `src/marketentry/goyoukiki.cljk` to ground a jurisdiction assessment in a
   real, verifiably-sourced tender fact rather than an unverified one
 
 See [`docs/business-model.md`](docs/business-model.md) and
@@ -101,7 +101,7 @@ Alongside the market-entry / statute catalogs, this repo carries a
 `com-junkawasaki/root`) — national dishes, protected products, beverages,
 crafts, festivals and heritage sites for Japan:
 
-- `src/culture/facts.cljc` — the catalog, source of truth (keyed by
+- `src/culture/facts.cljk` — the catalog, source of truth (keyed by
   uppercase ISO3, mirroring `statute.facts`).
 - `schema/culture.edn` — DataScript schema.
 - `data/culture-tx.edn` — derived DataScript tx-data (regenerated from
