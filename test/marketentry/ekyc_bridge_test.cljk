@@ -1,5 +1,5 @@
 (ns marketentry.ekyc-bridge-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.ekyc :as ekyc]
             [marketentry.ekyc-bridge :as bridge]))
 

@@ -1,5 +1,5 @@
 (ns marketentry.goyoukiki-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.ontology.connector :as connector]
             [marketentry.goyoukiki :as goyoukiki]))
 
